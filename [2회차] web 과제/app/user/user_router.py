@@ -4,7 +4,7 @@ from app.user.user_service import UserService
 from app.dependencies import get_user_service
 from app.responses.base_response import BaseResponse
 
-user = APIRouter(prefix="/api/user나이")
+user = APIRouter(prefix="/api/user")
 
 
 @user.post("/login", response_model=BaseResponse[User], status_code=status.HTTP_200_OK)
