@@ -6,20 +6,24 @@
     <title>User Management</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
+            /* 폰트 변경 */
+            font-family: -apple-system, "Noto Sans KR", sans-serif;
+            margin: 80px;
             text-align: center;
+            background: #f5f5f7;
         }
         .container {
+            color: #000000;
             max-width: 600px;
             margin: 0 auto;
-            border: 1px solid #ccc;
-            border-radius: 8px;
+            border: 1px solid #0f0fca;
+            border-radius: 16px;
             padding: 20px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.1);
         }
         h1 {
-            color: #333;
+            color: #000000;
+            margin-bottom: 40px;
         }
         form {
             margin: 20px 0;
@@ -31,13 +35,26 @@
             font-size: 16px;
         }
         button {
+            width: 75%; /*로그인 버튼 키우기*/
+            background: #0f0fca;
+            color: #ffffff;
+            border: none;             /* 검은 테두리 제거 */
+            border-radius: 10px;      /* 둥글게 */
             padding: 10px 20px;
             margin: 10px;
             font-size: 16px;
             cursor: pointer;
         }
+        button:hover { /* 마우스 올릴때 */
+            background: #7a7a7a;
+        }
+        button:active { /* 버튼 클릭할때 */
+            background: #000000;
+        }
         .section {
-            margin-bottom: 30px;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            color: #0f0fca;
         }
     </style>
 </head>
