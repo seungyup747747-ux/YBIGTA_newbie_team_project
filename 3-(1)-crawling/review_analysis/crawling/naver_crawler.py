@@ -216,7 +216,8 @@ class NaverCrawler(BaseCrawler):
 
         rating_id = card.get("data-rating-id")
         rating = self._extract_rating(card)
-        date_text = self._format_date(card.get("data-report-time"))
+        report_time = card.get("data-report-time")
+        date_text = self._format_date(str(report_time) if report_time else None)
 
         review_text = str(card.get("data-report-title") or "").strip()
         if not review_text:

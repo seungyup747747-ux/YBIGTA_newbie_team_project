@@ -1,0 +1,15 @@
+﻿item,value
+original_count,500.0
+missing_or_invalid_removed,0.0
+invalid_rating_removed,0.0
+date_outlier_removed,0.0
+short_review_removed,0.0
+long_review_removed,0.0
+exact_duplicates_removed,0.0
+final_count_after_preprocess,500.0
+svd_explained_variance,0.1166417563375335
+long_review_threshold,146.0
+long_review_count,20.0
+tfidf_feature_count,669.0
+svd_component_count,10.0
+final_count,500.0
