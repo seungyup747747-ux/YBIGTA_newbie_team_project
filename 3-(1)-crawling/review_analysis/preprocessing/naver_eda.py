@@ -24,8 +24,105 @@ STOPWORDS = {
     "보고",
     "봤습니다",
     "영화",
+    "영화는",
+    "영화를",
+    "영화가",
+    "하는",
+    "보는",
+    "하지만",
+    "이런",
+    "다시",
+    "봤는데",
+    "역시",
+    "그리고",
+    "내내",
+    "꼭",
+    "더",
+    "잘",
+    "볼",
+    "좀",
+    "또",
+    "왜",
+    "것",
+    "수",
+    "이",
+    "하지",
+    "시간",
+    "물의",
     "아바타",
 }
+
+
+KEYWORD_NORMALIZATION = {
+    "영상미": "영상미",
+    "영상미가": "영상미",
+    "영상미는": "영상미",
+    "영상미도": "영상미",
+    "스토리": "스토리",
+    "스토리는": "스토리",
+    "스토리가": "스토리",
+    "스토리도": "스토리",
+    "3D": "3D",
+    "3d로": "3D",
+    "3d": "3D",
+    "3시간이": "3시간",
+    "3시간": "3시간",
+    "cg": "CG",
+    "CG": "CG",
+    "극장에서": "극장",
+    "극장": "극장",
+    "영화관에서": "영화관",
+    "영화관": "영화관",
+    "아이맥스로": "아이맥스",
+    "아이맥스": "아이맥스",
+    "재밌게": "재미",
+    "재미있게": "재미",
+    "재밌었다": "재미",
+}
+
+
+PARTICLE_SUFFIXES = (
+    "으로부터",
+    "으로서",
+    "으로써",
+    "에서",
+    "에게",
+    "께서",
+    "부터",
+    "까지",
+    "처럼",
+    "보다",
+    "마다",
+    "으로",
+    "은",
+    "는",
+    "이",
+    "가",
+    "을",
+    "를",
+    "에",
+    "의",
+    "도",
+    "만",
+    "로",
+    "와",
+    "과",
+)
+
+
+def normalize_keyword(raw_token: str) -> str:
+    token = raw_token.strip()
+    token = KEYWORD_NORMALIZATION.get(token, token)
+
+    if token.lower().startswith("3d"):
+        return "3D"
+
+    for suffix in PARTICLE_SUFFIXES:
+        if len(token) > len(suffix) + 1 and token.endswith(suffix):
+            token = token[: -len(suffix)]
+            break
+
+    return KEYWORD_NORMALIZATION.get(token, token)
 
 
 def configure_font():
@@ -156,13 +253,14 @@ def plot_weekday_review_count(data: pd.DataFrame, output_dir: str):
 def plot_top_words(data: pd.DataFrame, output_dir: str):
     counter: Counter[str] = Counter()
     for text in data["cleaned_review"].fillna(""):
-        counter.update(
-            token
-            for token in str(text).split()
-            if len(token) >= 2
-            and not token.isdigit()
-            and token not in STOPWORDS
-        )
+        for raw_token in str(text).split():
+            token = normalize_keyword(raw_token)
+            if (
+                len(token) >= 2
+                and not token.isdigit()
+                and token not in STOPWORDS
+            ):
+                counter[token] += 1
 
     top_words = pd.DataFrame(
         counter.most_common(15),

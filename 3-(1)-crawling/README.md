@@ -219,7 +219,7 @@ database/reviews_naver.csv
 
 ### (6) 주요 키워드
 
-정제된 리뷰 텍스트에서 불용어와 숫자를 제외한 뒤 주요 단어 빈도를 확인하였다. 네이버 리뷰는 한국어 리뷰가 중심이므로 Word 기반 토큰을 사용하였다.
+정제된 리뷰 텍스트에서 불용어와 숫자를 제외한 뒤 주요 키워드를 단어 단위로 나타냈다.
 
 <p align="center">
 <img src="review_analysis/plots/naver_top_words.png" width="600">
