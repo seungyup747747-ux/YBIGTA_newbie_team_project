@@ -8,6 +8,8 @@ from review_analysis.preprocessing.example_processor import ExampleProcessor
 from review_analysis.preprocessing.letterboxd_processor import (
     LetterboxdProcessor,
 )
+from review_analysis.preprocessing.naver_processor import NaverProcessor
+
 from review_analysis.preprocessing.metacritic_processor import (
     MetacriticProcessor,
 )
@@ -19,6 +21,7 @@ from review_analysis.preprocessing.metacritic_processor import (
 PREPROCESS_CLASSES: Dict[str, Type[BaseDataProcessor]] = {
     "reviews_example": ExampleProcessor,
     "reviews_letterboxd": LetterboxdProcessor,
+    "reviews_naver": NaverProcessor,
     "reviews_metacritic": MetacriticProcessor,
 }
 

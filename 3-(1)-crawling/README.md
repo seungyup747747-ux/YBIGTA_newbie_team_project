@@ -159,6 +159,150 @@ database/preprocessed_reviews_letterboxd.csv
 
 ---
 
+## Naver
+
+# 1. EDA (Exploratory Data Analysis)
+
+네이버 영화 관람평에서 수집한 500개의 리뷰를 분석하였다. 결측치, 비정상 별점, 날짜 이상치, 짧은 리뷰, 중복 리뷰를 점검한 결과 제거된 행 없이 총 500개의 리뷰가 최종 분석에 사용되었다.
+
+### (1) 크롤링 데이터
+
+네이버 통합검색 영화 관람평 영역에서 별점, 작성일, 리뷰 본문, 작성자 정보를 수집하였다. 네이버 리뷰 영역은 페이지 전체가 아니라 리뷰 박스 내부에서 추가 리뷰가 로드되는 구조이므로 Selenium으로 리뷰 리스트 영역을 스크롤하며 데이터를 수집하였다.
+
+최종 원본 데이터는 아래 파일로 저장하였다.
+
+```
+database/reviews_naver.csv
+```
+
+---
+
+### (2) 별점 분포
+
+네이버 별점은 10점 만점 기준으로 수집되었다. 평균 별점은 약 **8.89점**, 중앙값은 **10점**으로 나타났으며, 전체 리뷰 중 약 **84.2%**가 8점 이상이었다. 따라서 네이버 관람평은 전반적으로 높은 평점에 집중된 분포를 보였다.
+
+<p align="center">
+<img src="review_analysis/plots/naver_rating_distribution.png" width="600">
+</p>
+
+---
+
+### (3) 리뷰 길이 분포
+
+리뷰 길이는 평균 약 **44.46자**, 중앙값 **26자**로 짧은 리뷰가 많은 편이었다. 다만 최대 길이는 324자로 일부 긴 감상평도 존재하였다. 긴 리뷰는 실제 사용자 리뷰로 판단하여 제거하지 않고 `is_long_review` 파생 변수로 별도 표시하였다.
+
+<p align="center">
+<img src="review_analysis/plots/naver_review_length_distribution.png" width="600">
+</p>
+
+---
+
+### (4) 시계열 분포
+
+리뷰 작성일은 2022년 12월 14일부터 2026년 3월 1일까지 분포하였다. 월별 리뷰 수를 확인하여 영화 개봉 이후 시점별 관심도 변화를 확인할 수 있도록 하였다.
+
+<p align="center">
+<img src="review_analysis/plots/naver_monthly_reviews.png" width="600">
+</p>
+
+---
+
+### (5) 요일별 분포
+
+요일별 리뷰 수를 비교한 결과 주말 리뷰 비중을 별도로 확인할 수 있었다. 이후 플랫폼 비교분석에서 사이트별 사용자 활동 시점 차이를 비교하는 기준으로 활용할 수 있다.
+
+<p align="center">
+<img src="review_analysis/plots/naver_weekday_reviews.png" width="600">
+</p>
+
+---
+
+### (6) 주요 키워드
+
+정제된 리뷰 텍스트에서 불용어와 숫자를 제외한 뒤 주요 단어 빈도를 확인하였다. 네이버 리뷰는 한국어 리뷰가 중심이므로 Word 기반 토큰을 사용하였다.
+
+<p align="center">
+<img src="review_analysis/plots/naver_top_words.png" width="600">
+</p>
+
+---
+
+# 2. 전처리 및 Feature Engineering
+
+## (1) 결측치 처리
+
+다음 항목에 결측치 또는 형식 오류가 존재하는 데이터는 제거하도록 처리하였다.
+
+- rating
+- review
+- date
+
+이번 네이버 데이터에서는 해당 조건으로 제거된 행은 없었다.
+
+---
+
+## (2) 이상치 처리
+
+다음과 같은 데이터를 제거하거나 별도 변수로 표시하였다.
+
+- 네이버 정상 범위(0~10)를 벗어난 별점
+- 미래 날짜 및 비정상적으로 오래된 날짜
+- 너무 짧은 리뷰
+- 완전히 동일한 중복 리뷰
+- 매우 긴 리뷰(`is_long_review`)
+
+---
+
+## (3) 텍스트 전처리
+
+다음 과정을 수행하였다.
+
+- HTML 제거
+- URL 제거
+- Zero-width 문자 제거
+- Unicode 정규화
+- 공백 정리
+- 원본 리뷰(raw_review)와 정규화 리뷰(normalized_review), 벡터화용 리뷰(cleaned_review)를 모두 저장
+
+---
+
+## (4) 파생 변수 생성
+
+다음 Feature를 추가하였다.
+
+- review_length
+- word_count
+- review_length_log1p
+- is_long_review
+- year
+- month
+- day
+- weekday
+- hour
+- is_weekend
+- time_period
+- is_positive
+- is_negative
+- rating_centered
+
+---
+
+## (5) 텍스트 벡터화
+
+텍스트는 Word 기반 TF-IDF를 사용하여 벡터화하였다. 생성된 TF-IDF 벡터는 고차원이므로 Truncated SVD를 이용해 10개의 축약 텍스트 Feature(`text_svd_01`~`text_svd_10`)로 변환하였다.
+
+---
+
+## (6) 결과 저장
+
+최종 결과는 아래 파일로 저장하였다.
+
+```
+database/preprocessed_reviews_naver.csv
+```
+
+---
+
 # 3. 사이트 비교분석
 
 > 아래 내용은 팀원들의 전처리 결과를 모두 취합한 뒤 작성하였다.
