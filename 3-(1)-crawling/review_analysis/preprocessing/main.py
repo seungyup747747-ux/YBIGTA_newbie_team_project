@@ -8,6 +8,9 @@ from review_analysis.preprocessing.example_processor import ExampleProcessor
 from review_analysis.preprocessing.letterboxd_processor import (
     LetterboxdProcessor,
 )
+from review_analysis.preprocessing.metacritic_processor import (
+    MetacriticProcessor,
+)
 
 
 # 모든 preprocessing 클래스를 예시 형식으로 등록합니다.
@@ -16,6 +19,7 @@ from review_analysis.preprocessing.letterboxd_processor import (
 PREPROCESS_CLASSES: Dict[str, Type[BaseDataProcessor]] = {
     "reviews_example": ExampleProcessor,
     "reviews_letterboxd": LetterboxdProcessor,
+    "reviews_metacritic": MetacriticProcessor,
 }
 
 

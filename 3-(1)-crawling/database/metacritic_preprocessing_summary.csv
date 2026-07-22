@@ -1,0 +1,10 @@
+﻿item,value
+original_count,527
+missing_or_empty_removed,0
+invalid_rating_removed,0
+future_date_removed,0
+cleaning_empty_removed,0
+duplicate_removed,0
+final_count_after_preprocess,527
+tfidf_feature_count,500
+final_count,527
