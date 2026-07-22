@@ -197,12 +197,12 @@ database/reviews_naver.csv
 
 ---
 
-### (4) 시계열 분포
+### (4) 평점 기반 감성 그룹
 
-리뷰 작성일은 2022년 12월 14일부터 2026년 3월 1일까지 분포하였다. 월별 리뷰 수를 확인하여 영화 개봉 이후 시점별 관심도 변화를 확인할 수 있도록 하였다.
+평점을 기준으로 4점 이하를 부정, 5~7점을 중립, 8점 이상을 긍정 리뷰로 구분하였다. 긍정 리뷰가 421개로 대부분을 차지하였고, 중립 리뷰는 66개, 부정 리뷰는 13개로 나타났다. 이는 별점 분포에서 확인한 긍정 편향을 그룹 단위로도 보여준다.
 
 <p align="center">
-<img src="review_analysis/plots/naver_monthly_reviews.png" width="600">
+<img src="review_analysis/plots/naver_sentiment_group.png" width="600">
 </p>
 
 ---

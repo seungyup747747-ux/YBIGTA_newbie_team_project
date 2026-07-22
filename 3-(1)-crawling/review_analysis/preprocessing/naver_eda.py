@@ -105,22 +105,31 @@ def plot_review_length_distribution(data: pd.DataFrame, output_dir: str):
     save_plot("naver_review_length_distribution.png", output_dir)
 
 
-def plot_monthly_review_count(data: pd.DataFrame, output_dir: str):
-    monthly = (
-        data["date"]
-        .dt.to_period("M")
-        .value_counts()
-        .sort_index()
-    )
+def plot_sentiment_group(data: pd.DataFrame, output_dir: str):
+    labels = ["Negative (<=4)", "Neutral (5-7)", "Positive (>=8)"]
+    counts = [
+        int((data["rating"] <= 4).sum()),
+        int(data["rating"].between(5, 7).sum()),
+        int((data["rating"] >= 8).sum()),
+    ]
 
-    plt.figure(figsize=(9, 5))
-    labels = monthly.index.astype(str)
-    plt.bar(labels, monthly.values)
-    plt.title("Naver Monthly Review Count")
-    plt.xlabel("Month")
+    plt.figure(figsize=(8, 5))
+    bars = plt.bar(labels, counts)
+    plt.title("Naver Sentiment Group by Rating")
+    plt.xlabel("Rating Group")
     plt.ylabel("Review Count")
-    plt.xticks(rotation=30)
-    save_plot("naver_monthly_reviews.png", output_dir)
+    plt.xticks(rotation=15)
+
+    for bar, count in zip(bars, counts):
+        plt.text(
+            bar.get_x() + bar.get_width() / 2,
+            bar.get_height(),
+            str(count),
+            ha="center",
+            va="bottom",
+        )
+
+    save_plot("naver_sentiment_group.png", output_dir)
 
 
 def plot_weekday_review_count(data: pd.DataFrame, output_dir: str):
@@ -213,7 +222,7 @@ def run_eda(input_path: str, output_dir: str):
     print_summary(data)
     plot_rating_distribution(data, output_dir)
     plot_review_length_distribution(data, output_dir)
-    plot_monthly_review_count(data, output_dir)
+    plot_sentiment_group(data, output_dir)
     plot_weekday_review_count(data, output_dir)
     plot_top_words(data, output_dir)
     save_summary(data, output_dir)
