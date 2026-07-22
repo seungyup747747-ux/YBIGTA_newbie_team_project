@@ -171,13 +171,7 @@ database/preprocessed_reviews_letterboxd.csv
 - 수집 컬럼: `rating`, `date`, `review`, `reviewer`
 - 저장 파일: `database/reviews_naver.csv`
 
-실행 방법은 다음과 같다.
-
-```bash
-python main.py -o database --all
-```
-
-모듈 방식으로 실행할 경우 다음 명령어를 사용할 수 있다.
+실행 방법은 다음과 같다. 아래 명령어는 `3-(1)-crawling` 디렉토리에서 실행한다.
 
 ```bash
 python3 -m review_analysis.crawling.main -o database --all
