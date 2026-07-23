@@ -10,6 +10,10 @@ from review_analysis.preprocessing.letterboxd_processor import (
 )
 from review_analysis.preprocessing.naver_processor import NaverProcessor
 
+from review_analysis.preprocessing.metacritic_processor import (
+    MetacriticProcessor,
+)
+
 
 # 모든 preprocessing 클래스를 예시 형식으로 등록합니다.
 # key는 원본 CSV 파일명에서 확장자를 제외한 이름입니다.
@@ -18,6 +22,7 @@ PREPROCESS_CLASSES: Dict[str, Type[BaseDataProcessor]] = {
     "reviews_example": ExampleProcessor,
     "reviews_letterboxd": LetterboxdProcessor,
     "reviews_naver": NaverProcessor,
+    "reviews_metacritic": MetacriticProcessor,
 }
 
 
