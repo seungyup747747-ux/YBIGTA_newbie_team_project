@@ -215,9 +215,13 @@ python3 -m review_analysis.crawling.main -o database --all
 
 ---
 
-### (4) 요일별 분포
+### (4) 시계열 및 요일별 분포
 
-요일별 리뷰 수를 비교한 결과 주말 리뷰 비중을 별도로 확인할 수 있었다. 이후 플랫폼 비교분석에서 사이트별 사용자 활동 시점 차이를 비교하는 기준으로 활용할 수 있다.
+리뷰 작성일은 2022년 12월 14일부터 2026년 3월 1일까지 분포하였다. 전체 500개 리뷰를 연도별로 집계한 결과 2022년과 2026년에 리뷰가 집중되어 있었으며, 요일별 리뷰 수를 함께 확인한 결과 주말 작성 리뷰 비율은 약 **46.0%**로 나타났다.
+
+<p align="center">
+<img src="review_analysis/plots/naver_yearly_reviews.png" width="600">
+</p>
 
 <p align="center">
 <img src="review_analysis/plots/naver_weekday_reviews.png" width="600">
@@ -237,7 +241,21 @@ python3 -m review_analysis.crawling.main -o database --all
 
 # 3. 전처리 및 Feature Engineering
 
-## (1) 결측치 처리
+## (1) 데이터 형태와 변수 타입
+
+전처리 후 500개 리뷰가 최종 분석에 사용되었으며, 분석용 데이터에는 33개 컬럼이 저장된다.
+
+| 구분 | 주요 변수 | 설명 |
+| --- | --- | --- |
+| 수치형 | `rating`, `review_length`, `word_count`, `review_length_log1p`, `rating_centered` | 평점과 리뷰 텍스트 길이 특성 |
+| 날짜/시간형 | `date`, `year`, `month`, `day`, `weekday`, `hour`, `time_period`, `is_weekend` | 작성 시점과 파생 시점 변수 |
+| 이진형 | `is_long_review`, `is_positive`, `is_negative` | 긴 리뷰 여부와 평점 기반 감성 변수 |
+| 텍스트형 | `review`, `raw_review`, `normalized_review`, `cleaned_review`, `reviewer` | 원문과 정제된 분석용 텍스트 |
+| 벡터형 | `text_svd_01` ~ `text_svd_10` | TF-IDF 벡터를 축약한 텍스트 Feature |
+
+---
+
+## (2) 결측치 처리
 
 다음 항목에 결측치 또는 형식 오류가 존재하는 데이터는 제거하도록 처리하였다.
 
@@ -249,7 +267,7 @@ python3 -m review_analysis.crawling.main -o database --all
 
 ---
 
-## (2) 이상치 처리
+## (3) 이상치 처리
 
 다음과 같은 데이터를 제거하거나 별도 변수로 표시하였다.
 
@@ -261,7 +279,7 @@ python3 -m review_analysis.crawling.main -o database --all
 
 ---
 
-## (3) 텍스트 전처리
+## (4) 텍스트 전처리
 
 다음 과정을 수행하였다.
 
@@ -274,7 +292,7 @@ python3 -m review_analysis.crawling.main -o database --all
 
 ---
 
-## (4) 파생 변수 생성
+## (5) 파생 변수 생성
 
 다음 Feature를 추가하였다.
 
@@ -295,18 +313,33 @@ python3 -m review_analysis.crawling.main -o database --all
 
 ---
 
-## (5) 텍스트 벡터화
+## (6) 텍스트 벡터화
 
 텍스트는 Word 기반 TF-IDF를 사용하여 벡터화하였다. 생성된 TF-IDF 벡터는 고차원이므로 Truncated SVD를 이용해 10개의 축약 텍스트 Feature(`text_svd_01`~`text_svd_10`)로 변환하였다.
 
 ---
 
-## (6) 결과 저장
+## (7) 결과 저장 및 실행 방법
 
-최종 결과는 아래 파일로 저장하였다.
+전처리 결과와 전처리 요약 파일은 `database`에, EDA 그래프는 `review_analysis/plots`에 저장된다.
+
+```bash
+# 3-(1)-crawling 디렉토리에서 실행
+python3 -m review_analysis.preprocessing.main -o database -c reviews_naver
+python3 review_analysis/preprocessing/naver_eda.py -i database/preprocessed_reviews_naver.csv -o review_analysis/plots
+```
+
+생성 파일은 다음과 같다.
 
 ```
 database/preprocessed_reviews_naver.csv
+database/naver_preprocessing_summary.csv
+review_analysis/plots/naver_rating_distribution.png
+review_analysis/plots/naver_review_length_distribution.png
+review_analysis/plots/naver_sentiment_group.png
+review_analysis/plots/naver_yearly_reviews.png
+review_analysis/plots/naver_weekday_reviews.png
+review_analysis/plots/naver_top_words.png
 ```
 
 ---

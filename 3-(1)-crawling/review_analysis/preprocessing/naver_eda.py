@@ -229,6 +229,17 @@ def plot_sentiment_group(data: pd.DataFrame, output_dir: str):
     save_plot("naver_sentiment_group.png", output_dir)
 
 
+def plot_yearly_review_count(data: pd.DataFrame, output_dir: str):
+    counts = data["date"].dt.year.value_counts().sort_index()
+
+    plt.figure(figsize=(8, 5))
+    plt.bar(counts.index.astype(str), counts.values)
+    plt.title("Naver Review Count by Year")
+    plt.xlabel("Year")
+    plt.ylabel("Review Count")
+    save_plot("naver_yearly_reviews.png", output_dir)
+
+
 def plot_weekday_review_count(data: pd.DataFrame, output_dir: str):
     order = [
         "Monday",
@@ -309,6 +320,7 @@ def print_summary(data: pd.DataFrame):
     print(f"평균 리뷰 길이: {data['review_length'].mean():.3f}")
     print(f"중앙값 리뷰 길이: {data['review_length'].median():.3f}")
     print(f"최대 리뷰 길이: {data['review_length'].max()}")
+    print(f"주말 리뷰 비율: {data['is_weekend'].mean():.3f}")
 
 
 def run_eda(input_path: str, output_dir: str):
@@ -321,6 +333,7 @@ def run_eda(input_path: str, output_dir: str):
     plot_rating_distribution(data, output_dir)
     plot_review_length_distribution(data, output_dir)
     plot_sentiment_group(data, output_dir)
+    plot_yearly_review_count(data, output_dir)
     plot_weekday_review_count(data, output_dir)
     plot_top_words(data, output_dir)
     save_summary(data, output_dir)
