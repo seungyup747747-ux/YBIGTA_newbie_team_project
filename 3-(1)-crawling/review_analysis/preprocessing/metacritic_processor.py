@@ -2,17 +2,26 @@
 
 import os
 import re
+import unicodedata
 from typing import Optional
 
 import joblib
 import pandas as pd
+from langdetect import DetectorFactory, LangDetectException, detect_langs
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 from review_analysis.preprocessing.base_processor import BaseDataProcessor
 
 
+DetectorFactory.seed = 42
+
+
 class MetacriticProcessor(BaseDataProcessor):
-    """Preprocess Metacritic's 0-10 user-review data."""
+    """Metacritic 0~10점 사용자 리뷰를 분석 가능한 형태로 변환합니다.
+
+    원문 리뷰는 보존하고, 정제 텍스트·언어 정보·날짜/평점 파생 변수와
+    다국어 대응 TF-IDF 벡터라이저를 별도로 생성합니다.
+    """
 
     REQUIRED_COLUMNS = {"rate", "date", "review"}
 
@@ -23,7 +32,7 @@ class MetacriticProcessor(BaseDataProcessor):
         self.summary: dict[str, object] = {}
 
     def preprocess(self):
-        """Remove invalid, empty, future-dated, and duplicate reviews."""
+        """형식 오류, 빈값, 미래 날짜, 완전 중복을 제거하고 언어를 감지합니다."""
         data = pd.read_csv(self.input_path)
 
         missing_columns = self.REQUIRED_COLUMNS - set(data.columns)
@@ -60,6 +69,7 @@ class MetacriticProcessor(BaseDataProcessor):
         data = data[data["date"] <= today]
         self.summary["future_date_removed"] = before - len(data)
 
+        # 원문은 보존하고, 다국어 문자까지 유지한 분석용 텍스트를 따로 만듭니다.
         data["cleaned_review"] = data["review"].apply(self._clean_text)
 
         before = len(data)
@@ -72,6 +82,12 @@ class MetacriticProcessor(BaseDataProcessor):
         )
         self.summary["duplicate_removed"] = before - len(data)
 
+        language_result = data["review"].apply(self._detect_language)
+        data["language"] = language_result.map(lambda value: value[0])
+        data["language_confidence"] = language_result.map(
+            lambda value: value[1]
+        )
+
         if data.empty:
             raise RuntimeError("No Metacritic reviews remain after preprocessing.")
 
@@ -79,7 +95,7 @@ class MetacriticProcessor(BaseDataProcessor):
         self.summary["final_count_after_preprocess"] = len(self.data)
 
     def feature_engineering(self):
-        """Create text, date, rating, and TF-IDF features."""
+        """텍스트·날짜·평점 파생 변수와 character n-gram TF-IDF를 생성합니다."""
         if self.data is None:
             raise RuntimeError("Run preprocess() before feature_engineering().")
 
@@ -100,10 +116,14 @@ class MetacriticProcessor(BaseDataProcessor):
         data["is_negative"] = (data["rating"] <= 4).astype(int)
         data["site"] = "metacritic"
 
+        # 여러 언어와 문자 체계에 공통으로 적용 가능한 character n-gram을 사용합니다.
         self.vectorizer = TfidfVectorizer(
-            stop_words="english",
-            max_features=500,
-            ngram_range=(1, 2),
+            analyzer="char_wb",
+            ngram_range=(3, 5),
+            min_df=2 if len(data) >= 50 else 1,
+            max_features=1500,
+            sublinear_tf=True,
+            lowercase=False,
         )
         tfidf_matrix = self.vectorizer.fit_transform(data["cleaned_review"])
         self.summary["tfidf_feature_count"] = int(tfidf_matrix.shape[1])
@@ -112,7 +132,7 @@ class MetacriticProcessor(BaseDataProcessor):
         self.summary["final_count"] = len(data)
 
     def save_to_database(self):
-        """Save processed data, its summary, and the TF-IDF vectorizer."""
+        """전처리 CSV, 처리 요약 CSV, TF-IDF 벡터라이저를 저장합니다."""
         if self.data is None:
             raise RuntimeError("There is no data to save.")
 
@@ -149,7 +169,58 @@ class MetacriticProcessor(BaseDataProcessor):
 
     @staticmethod
     def _clean_text(text: str) -> str:
-        """Remove URLs and collapse repeated whitespace."""
-        text = re.sub(r"https?://\S+|www\.\S+", " ", str(text))
+        """URL·중복 공백만 정리하고 모든 언어의 문자는 보존합니다."""
+        text = unicodedata.normalize("NFKC", str(text))
+        text = re.sub(r"https?://\S+|www\.\S+", " ", text)
         text = re.sub(r"\s+", " ", text)
         return text.strip()
+
+    @classmethod
+    def _detect_language(cls, text: str) -> tuple[str, float]:
+        """리뷰 언어와 신뢰도를 반환하며, 짧거나 불확실한 문장은 unknown 처리합니다."""
+        compact = re.sub(r"\s+", " ", text).strip()
+        letter_count = sum(
+            unicodedata.category(character).startswith("L")
+            for character in compact
+        )
+        if letter_count < 8:
+            return "unknown", 0.0
+
+        script_language = cls._detect_script_language(compact)
+        if script_language is not None:
+            return script_language, 1.0
+
+        try:
+            candidates = detect_langs(compact)
+        except LangDetectException:
+            return "unknown", 0.0
+
+        if not candidates:
+            return "unknown", 0.0
+
+        best = candidates[0]
+        confidence = float(best.prob)
+        if confidence < 0.70:
+            return "unknown", confidence
+
+        return best.lang, confidence
+
+    @staticmethod
+    def _detect_script_language(text: str) -> Optional[str]:
+        """고유 문자 체계가 뚜렷한 언어를 langdetect보다 먼저 판별합니다."""
+        kana_count = sum(0x3040 <= ord(char) <= 0x30FF for char in text)
+        if kana_count >= 2:
+            return "ja"
+
+        for language, start, end in [
+            ("ko", 0xAC00, 0xD7AF),
+            ("ru", 0x0400, 0x04FF),
+            ("el", 0x0370, 0x03FF),
+            ("ar", 0x0600, 0x06FF),
+            ("th", 0x0E00, 0x0E7F),
+            ("zh", 0x4E00, 0x9FFF),
+        ]:
+            if sum(start <= ord(char) <= end for char in text) >= 3:
+                return language
+
+        return None
