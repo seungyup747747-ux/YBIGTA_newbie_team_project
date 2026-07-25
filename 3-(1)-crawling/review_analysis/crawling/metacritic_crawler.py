@@ -1,6 +1,6 @@
 from typing import Dict, List, Optional
 
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 from selenium import webdriver
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.common.by import By
@@ -16,7 +16,7 @@ from review_analysis.crawling.base_crawler import BaseCrawler
 from utils.logger import setup_logger
 
 import os
-import pandas as pd
+import pandas as pd  # type: ignore[import-untyped]
 import time
 
 
@@ -84,6 +84,9 @@ class MetacriticCrawler(BaseCrawler):
         """Metacritic에서 별점, 날짜, 리뷰 본문을 수집한다."""
         self.start_browser()
         driver = self.driver
+        if driver is None:
+            raise RuntimeError("WebDriver가 초기화되지 않았습니다.")
+
         url = 'https://www.metacritic.com/movie/avatar-the-way-of-water/user-reviews/'
         driver.get(url)
         driver.implicitly_wait(2)
@@ -162,29 +165,32 @@ class MetacriticCrawler(BaseCrawler):
         data_rows = soup.find_all('div', attrs={'data-testid': 'review-card'})
 
         for i, row in enumerate(data_rows):
-            blank = []
+            if not isinstance(row, Tag):
+                continue
 
-            rate = row.find('div', attrs={'class':'c-siteReviewScore'}) # 리뷰 점수 가져오기
-            if rate:
-                rate = rate.get_text().strip()
+            blank: List[str] = []
+
+            rate_element = row.find('div', attrs={'class':'c-siteReviewScore'}) # 리뷰 점수 가져오기
+            if rate_element:
+                rate = rate_element.get_text().strip()
                 blank.append(rate)
             else:
                 blank.append('Someting is wrong')
                 print('{}번째 리뷰 평점 가져올 때 문제 발생'.format(i+1))
                 continue
 
-            date = row.find('div', attrs={'data-testid':'review-card-date'}) # 리뷰 날짜 가져오기
-            if date:
-                date = date.get_text().strip()
+            date_element = row.find('div', attrs={'data-testid':'review-card-date'}) # 리뷰 날짜 가져오기
+            if date_element:
+                date = date_element.get_text().strip()
                 blank.append(date)
             else:
                 blank.append('Something is wrong')
                 print('{}번째 리뷰 날짜 가져올 때 문제 발생'.format(i+1))
                 continue
 
-            review = row.find('div', attrs={'data-testid': 'review-quote-text'})
-            if review:
-                review = review.get_text().strip()
+            review_element = row.find('div', attrs={'data-testid': 'review-quote-text'})
+            if review_element:
+                review = review_element.get_text().strip()
             else:
                 blank.append('Someting is wrong')
                 print('{}번째 리뷰 본문 가져올 때 문제 발생'.format(i+1))
