@@ -16,7 +16,7 @@ from review_analysis.crawling.base_crawler import BaseCrawler
 from utils.logger import setup_logger
 
 import os
-import pandas as pd  # type: ignore[import-untyped]
+import pandas as pd 
 import time
 
 
