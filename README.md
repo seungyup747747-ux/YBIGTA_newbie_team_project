@@ -43,9 +43,9 @@ main 브랜치에 직접 push를 시도했을 때 branch protection rule에 의�
 
 ### 3) Pull Request review 및 merge
 
-각자 작업 브랜치를 생성해 Pull Request를 만들고, reviewer의 리뷰를 받은 뒤 main 브랜치에 merge할 예정입니다.
+각자 작업 브랜치를 생성해 Pull Request를 만들고, reviewer의 리뷰를 받은 뒤 main 브랜치에 merge했습니다.
 
-> `review_and_merged.png`는 Pull Request review 및 merge 완료 후 추가 예정입니다.
+![review and merged](github/review_and_merged.png)
 
 ## 실행 방법
 
