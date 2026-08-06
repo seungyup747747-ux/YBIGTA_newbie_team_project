@@ -145,6 +145,71 @@ review_analysis/plots/comparison_keyword_frequency.png
 
 ---
 
+## Docker 및 Cloud DB
+
+### Docker
+
+본 프로젝트는 Docker 이미지로 빌드하여 실행할 수 있습니다.
+
+Docker Hub 주소:
+
+```text
+https://hub.docker.com/r/hseungy/ybigta-newbie-team-project
+```
+
+이미지 빌드:
+
+```bash
+docker build -t hseungy/ybigta-newbie-team-project:latest .
+```
+
+컨테이너 실행:
+
+```bash
+docker run --env-file .env -p 8000:8000 hseungy/ybigta-newbie-team-project:latest
+```
+
+실행 후 Swagger 문서는 아래 주소에서 확인할 수 있습니다.
+
+```text
+http://localhost:8000/docs
+```
+
+`.env` 파일은 개인정보 및 DB 접속 정보 보호를 위해 Docker 이미지와 GitHub에 포함하지 않습니다.
+
+### Cloud DB
+
+MySQL은 AWS RDS, MongoDB는 MongoDB Atlas를 사용하여 클라우드 환경에서 연결합니다. DB 접속 정보는 `.env` 파일의 환경변수로 관리합니다.
+
+예시 환경변수:
+
+```env
+MYSQL_HOST=RDS_ENDPOINT
+MYSQL_PORT=3306
+MYSQL_USER=MYSQL_USER
+MYSQL_PASSWORD=MYSQL_PASSWORD
+MYSQL_DATABASE=MYSQL_DATABASE
+
+MONGODB_URI=MONGODB_ATLAS_CONNECTION_STRING
+MONGODB_DATABASE=MONGODB_DATABASE
+```
+
+MongoDB Atlas에는 사이트별 원본 리뷰 데이터를 아래 컬렉션 이름으로 저장합니다.
+
+```text
+raw_naver
+raw_letterboxd
+raw_metacritic
+```
+
+전처리 API 실행 후 결과는 아래 컬렉션에 저장됩니다.
+
+```text
+processed_naver
+processed_letterboxd
+processed_metacritic
+```
+
 ## Crawling / EDA-FE 상세 정리
 
 ## Letterboxd
