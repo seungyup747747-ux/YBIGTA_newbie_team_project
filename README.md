@@ -892,3 +892,91 @@ Naver에서는 `영상미`, `스토리`, `재밌게`, `영화관`, `cg`, `아름
 다만 세 플랫폼 모두 시각적 요소와 영상미에 관련된 단어가 공통적으로 높은 중요도를 보였다. 이를 통해 《아바타: 물의 길》의 시각적 완성도는 플랫폼과 언어의 차이를 넘어 공통적으로 강하게 인식된 작품의 핵심 특징임을 확인할 수 있었다.
 
 ---
+
+## DB 구현
+
+### MySQL 사용자 CRUD
+
+기존 JSON 파일 기반 사용자 저장소를 MySQL 기반 저장소로 변경하였다.
+FastAPI의 dependency injection을 통해 요청마다 SQLAlchemy Session을 생성하고, 요청 처리가 끝나면 Session을 닫도록 구성하였다.
+
+사용자 정보는 반드시 `users` 테이블에 저장한다.
+
+```sql
+CREATE TABLE IF NOT EXISTS users (
+    email VARCHAR(255) PRIMARY KEY,
+    password VARCHAR(255) NOT NULL,
+    username VARCHAR(255) NOT NULL
+);
+```
+
+`UserRepository`에서 지원하는 작업은 다음과 같다.
+
+- 사용자 저장: 신규 이메일이면 `INSERT`
+- 사용자 조회: 이메일을 기준으로 `SELECT`
+- 사용자 수정: 기존 이메일이면 비밀번호와 사용자 이름을 `UPDATE`
+- 사용자 삭제: 이메일을 기준으로 `DELETE`
+
+제공된 Repository 테스트 4개와 기존 사용자 관련 전체 테스트 21개가 모두 통과하였다. 또한 로컬 MySQL에서 저장, 조회, 수정, 삭제 동작을 직접 검증하였다.
+
+### MongoDB 리뷰 전처리 자동화
+
+크롤링 원본과 전처리 결과는 사이트별 MongoDB 컬렉션으로 구분하였다.
+
+| 사이트 | 원본 컬렉션 | 전처리 결과 컬렉션 | 원본 개수 | 전처리 결과 |
+|---|---|---|---:|---:|
+| Naver | `raw_naver` | `processed_naver` | 500 | 500 |
+| Letterboxd | `raw_letterboxd` | `processed_letterboxd` | 500 | 478 |
+| Metacritic | `raw_metacritic` | `processed_metacritic` | 527 | 527 |
+
+전처리 API는 MongoDB에서 사이트별 원본 리뷰를 조회한 뒤 기존 과제에서 구현한 `NaverProcessor`, `LetterboxdProcessor`, `MetacriticProcessor`를 실행한다. 처리 결과는 대응하는 `processed_*` 컬렉션에 저장한다.
+
+```text
+MongoDB raw 컬렉션
+→ 사이트별 기존 Processor 선택
+→ preprocess()
+→ feature_engineering()
+→ MongoDB processed 컬렉션 저장
+```
+
+### 리뷰 전처리 API
+
+```http
+POST /review/preprocess/{site_name}
+```
+
+지원하는 `site_name`은 다음과 같다.
+
+- `naver`
+- `letterboxd`
+- `metacritic`
+
+성공 응답 예시는 다음과 같다.
+
+```json
+{
+  "status": "success",
+  "site_name": "naver",
+  "raw_collection": "raw_naver",
+  "processed_collection": "processed_naver",
+  "raw_count": 500,
+  "processed_count": 500
+}
+```
+
+지원하지 않는 사이트를 요청하면 `400`, 해당 원본 컬렉션이 비어 있으면 `404`를 반환한다.
+
+### DB 환경변수
+
+프로젝트 최상위의 `.env` 파일에 다음 환경변수를 설정해야 한다. 실제 접속 정보와 비밀번호는 GitHub에 업로드하지 않는다.
+
+```env
+MYSQL_USER=
+MYSQL_PASSWORD=
+MYSQL_HOST=
+MYSQL_PORT=
+MYSQL_DATABASE=
+MONGO_URL=
+```
+
+로컬 MySQL, AWS RDS, MongoDB Atlas에서도 동일한 환경변수 이름을 사용한다. 배포 환경에서는 값만 각 클라우드 DB 접속 정보로 변경한다.
