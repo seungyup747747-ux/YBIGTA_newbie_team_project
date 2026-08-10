@@ -145,71 +145,6 @@ review_analysis/plots/comparison_keyword_frequency.png
 
 ---
 
-## Docker 및 Cloud DB
-
-### Docker
-
-본 프로젝트는 Docker 이미지로 빌드하여 실행할 수 있습니다.
-
-Docker Hub 주소:
-
-```text
-https://hub.docker.com/r/hseungy/ybigta-newbie-team-project
-```
-
-이미지 빌드:
-
-```bash
-docker build -t hseungy/ybigta-newbie-team-project:latest .
-```
-
-컨테이너 실행:
-
-```bash
-docker run --env-file .env -p 8000:8000 hseungy/ybigta-newbie-team-project:latest
-```
-
-실행 후 Swagger 문서는 아래 주소에서 확인할 수 있습니다.
-
-```text
-http://localhost:8000/docs
-```
-
-`.env` 파일은 개인정보 및 DB 접속 정보 보호를 위해 Docker 이미지와 GitHub에 포함하지 않습니다.
-
-### Cloud DB
-
-MySQL은 AWS RDS, MongoDB는 MongoDB Atlas를 사용하여 클라우드 환경에서 연결합니다. DB 접속 정보는 `.env` 파일의 환경변수로 관리합니다.
-
-예시 환경변수:
-
-```env
-MYSQL_HOST=RDS_ENDPOINT
-MYSQL_PORT=3306
-MYSQL_USER=MYSQL_USER
-MYSQL_PASSWORD=MYSQL_PASSWORD
-MYSQL_DATABASE=MYSQL_DATABASE
-
-MONGODB_URI=MONGODB_ATLAS_CONNECTION_STRING
-MONGODB_DATABASE=MONGODB_DATABASE
-```
-
-MongoDB Atlas에는 사이트별 원본 리뷰 데이터를 아래 컬렉션 이름으로 저장합니다.
-
-```text
-raw_naver
-raw_letterboxd
-raw_metacritic
-```
-
-전처리 API 실행 후 결과는 아래 컬렉션에 저장됩니다.
-
-```text
-processed_naver
-processed_letterboxd
-processed_metacritic
-```
-
 ## Crawling / EDA-FE 상세 정리
 
 ## Letterboxd
@@ -1045,3 +980,140 @@ MONGO_URL=
 ```
 
 로컬 MySQL, AWS RDS, MongoDB Atlas에서도 동일한 환경변수 이름을 사용한다. 배포 환경에서는 값만 각 클라우드 DB 접속 정보로 변경한다.
+
+---
+
+## Docker 및 Cloud DB
+
+### Docker
+
+본 프로젝트는 Docker 이미지로 빌드하여 실행할 수 있습니다.
+
+Docker Hub 주소:
+
+```text
+https://hub.docker.com/r/hseungy/ybigta-newbie-team-project
+```
+
+이미지 빌드:
+
+```bash
+docker build -t hseungy/ybigta-newbie-team-project:latest .
+```
+
+컨테이너 실행:
+
+```bash
+docker run --env-file .env -p 8000:8000 hseungy/ybigta-newbie-team-project:latest
+```
+
+실행 후 Swagger 문서는 아래 주소에서 확인할 수 있습니다.
+
+```text
+http://localhost:8000/docs
+```
+
+`.env` 파일은 개인정보 및 DB 접속 정보 보호를 위해 Docker 이미지와 GitHub에 포함하지 않습니다.
+
+### Cloud DB
+
+MySQL은 AWS RDS, MongoDB는 MongoDB Atlas를 사용하여 클라우드 환경에서 연결합니다. DB 접속 정보는 `.env` 파일의 환경변수로 관리합니다.
+
+예시 환경변수:
+
+```env
+MYSQL_HOST=RDS_ENDPOINT
+MYSQL_PORT=3306
+MYSQL_USER=MYSQL_USER
+MYSQL_PASSWORD=MYSQL_PASSWORD
+MYSQL_DATABASE=MYSQL_DATABASE
+
+MONGO_URL=MONGODB_ATLAS_CONNECTION_STRING_WITH_DATABASE_NAME
+```
+
+MongoDB Atlas에는 사이트별 원본 리뷰 데이터를 아래 컬렉션 이름으로 저장합니다.
+
+```text
+raw_naver
+raw_letterboxd
+raw_metacritic
+```
+
+전처리 API 실행 후 결과는 아래 컬렉션에 저장됩니다.
+
+```text
+processed_naver
+processed_letterboxd
+processed_metacritic
+```
+---
+
+## AWS EC2 배포 및 API 실행 결과
+
+Docker Hub에 업로드한 이미지를 AWS EC2에서 pull한 뒤, 환경변수 파일을
+주입하여 FastAPI 컨테이너를 실행하였다. 컨테이너의 8000번 포트를 EC2의
+8000번 포트에 연결하고, EC2 퍼블릭 IP의 Swagger 문서에서 전체 API가
+클라우드 DB와 정상적으로 통신하는지 확인하였다.
+
+### 회원가입
+
+`POST /api/user/register` 실행 결과 사용자 정보가 MySQL에 정상적으로
+저장되었다.
+
+![register API 실행 결과](aws/register.png)
+
+### 로그인
+
+`POST /api/user/login` 실행 결과 저장된 사용자 정보로 로그인에 성공하였다.
+
+![login API 실행 결과](aws/login.png)
+
+### 비밀번호 변경
+
+`PUT /api/user/update-password` 실행 결과 사용자의 비밀번호가 정상적으로
+변경되었다.
+
+![update-password API 실행 결과](aws/update-password.png)
+
+### 사용자 삭제
+
+`DELETE /api/user/delete` 실행 결과 사용자 정보가 정상적으로 삭제되었다.
+
+![delete API 실행 결과](aws/delete.png)
+
+### MongoDB 리뷰 전처리
+
+`POST /review/preprocess/{site_name}` 실행 결과 MongoDB Atlas의 원본 리뷰를
+조회하고 전처리한 뒤 결과 컬렉션에 정상적으로 저장하였다.
+
+![preprocess API 실행 결과](aws/preprocess.png)
+
+## GitHub Actions CI/CD
+
+`main` 브랜치에 변경사항이 반영되면 GitHub Actions가 Docker 이미지를
+빌드하여 Docker Hub에 push한다. 이미지 빌드가 성공하면 EC2에 SSH로
+접속하여 최신 이미지를 pull하고 기존 컨테이너를 새 컨테이너로 교체한다.
+
+워크플로는 다음 두 Job으로 구성하였다.
+
+- `Build and Push Docker Image`
+- `Deploy to EC2`
+
+![GitHub Actions 성공 결과](aws/github_action.png)
+
+---
+## DB, Docker, AWS 프로젝트를 진행하며 깨달은 점
+### 백승업
+이번 과제를 진행하면서 Docker 이미지 빌드, Docker Hub 업로드, 컨테이너 실행 과정을 직접 해보며 로컬 환경에 의존하지 않고 서버를 실행하는 흐름을 이해할 수 있었습니다. Dockerfile과 .dockerignore를 구성하고 이미지가 정상적으로 빌드 및 실행되는지 확인하면서 컨테이너 기반 배포 방식에 대해 익힐 수 있었습니다. 또한 AWS RDS MySQL과 MongoDB Atlas를 구축하고, 환경변수를 통해 DB 접속 정보를 관리하면서 실제 백엔드 프로젝트에서 클라우드 DB를 연결하는 과정을 경험했습니다. MongoDB Atlas에는 사이트별 원본 리뷰 데이터를 업로드하고, RDS와 Atlas가 애플리케이션에서 각각 어떤 역할을 하는지도 확인할 수 있었습니다. 이 과정에서 .env 파일을 GitHub에 올리지 않고 관리해야 하는 이유, Docker 이미지에는 민감한 정보가 포함되지 않도록 해야 하는 이유 등 보안적인 부분도 체감할 수 있었습니다. 전체적으로 Docker, Cloud DB, 환경변수, README 문서화가 실제 배포 가능한 프로젝트 구조에서 어떻게 연결되는지 배울 수 있었던 과제였습니다.
+
+### 정민규
+
+이번 과제를 진행하면서 개발 환경을 제대로 연결하고 관리하는 과정이 훨씬 중요하다는 것을 느꼈다. MySQL을 Docker로 실행하는 과정에서 비밀번호 설정 문제로 접속이 거부되기도 했고, .env에 적힌 DB host, port, user 정보가 로컬 실행 환경과 컨테이너 환경에서 다르게 해석될 수 있다는 점도 직접 확인했다. 처음에는 DB 연결 오류가 코드 문제인지 설정 문제인지 구분하기 어려웠지만, 컨테이너를 다시 생성하고 MySQL 내부 접속, users 테이블 확인, pytest 실행을 순서대로 점검하면서 문제를 좁혀가는 방법을 배웠다.
+
+또한 MySQL CRUD 구현과 MongoDB 전처리 API, Docker 이미지 생성, AWS 배포, GitHub Actions 자동화가  하나의 서비스 배포 흐름으로 이어진다는 점을 이해하게 되었다. 특히 환경변수 관리, .dockerignore 설정, 클라우드 DB 연결, EC2 배포처럼 보안과 실행 환경을 함께 고려해야 하는 부분이 많았다. 이번 과제를 통해 로컬에서만 동작하는 프로젝트를 실제 배포 가능한 형태로 확장하는 과정을 경험했고, 앞으로 팀 프로젝트를 진행할 때는 코드 구현뿐 아니라 실행 환경, 배포 방식, 자동화까지 함께 설계해야겠다고 느꼈다.
+
+### 최은채
+
+이번 과제에서는 AWS EC2 배포와 GitHub Actions CI/CD 파이프라인 구축을 맡았다. 진행하면서 여러 시행착오를 겪었다. 처음 빌드한 Docker 이미지가 arm 아키텍처로 만들어져 EC2 인스턴스와 충돌이 나서, EC2를 ARM으로 열어서 문제를 해결했다. 또 MongoDB 연결 URL이 잘못되어 있어 한동안 원인을 찾지 못했는데, 팀원과 소통하며 값을 다시 확인한 끝에 수정할 수 있었다. 배포 프로세스에서 계속 failed가 나서 살펴보니 MongoDB Atlas에서 해당 EC2의 퍼블릭 IP를 허용해주지 않은 것이 원인이었는데, Atlas Network Access에 퍼블릭 IP를 추가하니 success로 바뀌었다. 보안 그룹의 인바운드/아웃바운드 규칙을 지정하는 부분도 처음에는 어떤 포트를 어느 방향으로 열어줘야 하는지 헷갈려서 여러 번 설정을 고쳐가며 이해했던 것 같다.
+
+GitHub Actions에서는 Docker Hub username/password(토큰)가 Secrets에 등록되어 있지 않아 이미지 push 단계에서 계속 실패했는데, 팀원에게 Docker Hub 액세스 토큰을 발급받아 Secrets에 등록해달라고 요청하면서 문제를 해결했다. 이런 과정을 겪으며 배포는 코드만 잘 짜는 것과는 별개로, 인프라 설정과 팀원 간 소통이 함께 맞아떨어져야 한다는 것을 느꼈다.
