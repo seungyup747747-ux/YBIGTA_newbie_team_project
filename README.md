@@ -1117,3 +1117,75 @@ Docker Hub에 업로드한 이미지를 AWS EC2에서 pull한 뒤, 환경변수 
 이번 과제에서는 AWS EC2 배포와 GitHub Actions CI/CD 파이프라인 구축을 맡았다. 진행하면서 여러 시행착오를 겪었다. 처음 빌드한 Docker 이미지가 arm 아키텍처로 만들어져 EC2 인스턴스와 충돌이 나서, EC2를 ARM으로 열어서 문제를 해결했다. 또 MongoDB 연결 URL이 잘못되어 있어 한동안 원인을 찾지 못했는데, 팀원과 소통하며 값을 다시 확인한 끝에 수정할 수 있었다. 배포 프로세스에서 계속 failed가 나서 살펴보니 MongoDB Atlas에서 해당 EC2의 퍼블릭 IP를 허용해주지 않은 것이 원인이었는데, Atlas Network Access에 퍼블릭 IP를 추가하니 success로 바뀌었다. 보안 그룹의 인바운드/아웃바운드 규칙을 지정하는 부분도 처음에는 어떤 포트를 어느 방향으로 열어줘야 하는지 헷갈려서 여러 번 설정을 고쳐가며 이해했던 것 같다.
 
 GitHub Actions에서는 Docker Hub username/password(토큰)가 Secrets에 등록되어 있지 않아 이미지 push 단계에서 계속 실패했는데, 팀원에게 Docker Hub 액세스 토큰을 발급받아 Secrets에 등록해달라고 요청하면서 문제를 해결했다. 이런 과정을 겪으며 배포는 코드만 잘 짜는 것과는 별개로, 인프라 설정과 팀원 간 소통이 함께 맞아떨어져야 한다는 것을 느꼈다.
+
+
+---
+
+## Weather MCP 프로젝트
+
+서울 주요 지역의 날씨 데이터를 30분마다 수집하여 AWS RDS MySQL에 저장하고, MCP 도구를 통해 조회할 수 있는 시스템을 구현하였다.
+
+### 시스템 구조
+
+```text
+Open-Meteo API
+    ↓
+AWS EC2 데이터 수집기
+    ↓
+Private RDS MySQL
+    ↓
+Repository → Service → MCP Tool
+    ↓
+Next.js Agent
+```
+
+### 날씨 데이터 수집 및 자동 갱신
+
+Open-Meteo API에서 서울역, 강남, 신촌, 여의도, 잠실의 날씨를 수집하였다. 수집 항목은 기온, 체감온도, 습도, 강수량, 풍속, 날씨 코드, 위험 점수, 위험 등급, 위험 판단 사유, 관측 시각 및 수집 시각이다.
+
+AWS EC2의 `systemd timer`를 이용하여 수집기를 30분마다 자동 실행하도록 구성하였다. `(location, observed_at)`에 UNIQUE 제약조건을 적용하여 동일 지역과 관측 시각의 데이터가 중복 저장되지 않도록 하였다.
+
+![30분 주기 날씨 데이터 자동 갱신](evidence/weather_mcp/data_update.png)
+
+### Private RDS 및 네트워크 보안
+
+MySQL 데이터베이스는 서로 다른 가용 영역의 Private Subnet에 배치하였다. RDS의 Public Access를 비활성화하고, 인터넷 게이트웨이로 향하는 공개 라우팅 경로를 두지 않았다. MySQL 3306 포트는 지정된 보안 그룹에서만 접근할 수 있도록 제한하였으며, 외부 CIDR을 통한 접근은 허용하지 않았다. 데이터베이스 접속 정보와 비밀번호는 `.env` 환경변수로 관리하였다.
+
+![Private RDS 및 서브넷 구성](evidence/weather_mcp/rds_private.png)
+
+![RDS 보안 그룹의 MySQL 접근 제한](evidence/weather_mcp/security_group.png)
+
+### 데이터베이스 권한 분리
+
+데이터 수집기와 MCP 서버가 서로 다른 데이터베이스 계정을 사용하도록 구성하였다.
+
+| 계정 | 권한 | 역할 |
+|---|---|---|
+| `collector_user` | `SELECT`, `INSERT`, `UPDATE` | 날씨 데이터 수집 및 저장 |
+| `mcp_user` | `SELECT` | MCP 서버의 읽기 전용 조회 |
+
+MCP 서버에는 데이터 변경 권한을 부여하지 않아 MCP 요청을 통한 데이터 수정 및 삭제를 방지하였다.
+
+### 확장 가능한 MCP 구조
+
+데이터베이스 접근, 비즈니스 로직, MCP 인터페이스를 각각 Repository, Service, MCP Tool 계층으로 분리하였다. Repository는 SQL 실행과 데이터 접근을 담당하고, Service는 입력값 검증과 결과 직렬화를 담당하며, MCP Tool은 Service를 호출하여 Agent가 사용할 수 있는 기능을 제공한다.
+
+MCP 서버 이름은 `Seoul Weather MCP`이며 다음 세 가지 도구를 구현하였다.
+
+| MCP Tool | 기능 |
+|---|---|
+| `get_latest_weather` | 전체 또는 특정 지역의 최신 날씨 조회 |
+| `search_weather` | 지역, 기간, 위험 등급을 기준으로 날씨 검색 |
+| `get_weather_risk_summary` | 위험 등급별 건수와 평균·최대 위험 점수 집계 |
+
+조회 조건은 실행 전에 검증하고, SQL에는 바인딩 파라미터를 사용하여 입력값이 쿼리문에 직접 삽입되지 않도록 구성하였다.
+
+### 테스트 결과
+
+날씨 API 클라이언트, 위험도 계산, 데이터베이스 스키마, Repository, Service 및 입력값 검증 테스트를 수행하였으며 전체 테스트가 통과하였다.
+
+```text
+54 passed in 0.53s
+```
+
+주요 검증 항목은 Open-Meteo 응답 파싱, 위험 점수 및 등급 계산, 중복 저장 방지, 스키마 제약조건과 인덱스, MCP 읽기 전용 계정, 검색 조건 검증, 바인딩 파라미터 사용 및 위험도 집계이다.
