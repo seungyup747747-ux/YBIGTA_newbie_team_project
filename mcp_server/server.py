@@ -1,7 +1,7 @@
 from mcp.server.fastmcp import FastMCP
 
 from mcp_server.tools.weather_tools import register_weather_tools
-from mcp_server.weather_service import WeatherService
+from mcp_server.services.weather_service import WeatherService
 
 
 mcp = FastMCP("Seoul Weather MCP")
