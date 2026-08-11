@@ -6,7 +6,7 @@ from typing import Any
 
 from collector.open_meteo_client import LOCATIONS, OpenMeteoClient
 from collector.risk import enrich_weather_record
-from database.weather_repository import WeatherRepository
+from collector.repositories.weather_repository import WeatherRepository
 
 LOGGER = logging.getLogger(__name__)
 

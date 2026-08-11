@@ -73,20 +73,20 @@ mypy app/
 
 ### Crawling
 
-크롤링 과제는 프로젝트 루트 디렉토리에서 실행합니다. 각 사이트별 크롤러는 `review_analysis/crawling/main.py`에 등록되어 있으며, 실행 결과는 `database` 폴더에 저장됩니다.
+크롤링 과제는 프로젝트 루트 디렉토리에서 실행합니다. 각 사이트별 크롤러는 `collector/crawling/main.py`에 등록되어 있으며, 실행 결과는 `database` 폴더에 저장됩니다.
 
 전체 크롤러 실행:
 
 ```bash
-python3 -m review_analysis.crawling.main -o database --all
+python3 -m collector.crawling.main -o database --all
 ```
 
 특정 크롤러만 실행:
 
 ```bash
-python3 -m review_analysis.crawling.main -o database -c naver
-python3 -m review_analysis.crawling.main -o database -c letterboxd
-python3 -m review_analysis.crawling.main -o database -c metacritic
+python3 -m collector.crawling.main -o database -c naver
+python3 -m collector.crawling.main -o database -c letterboxd
+python3 -m collector.crawling.main -o database -c metacritic
 ```
 
 주요 생성 파일은 다음과 같습니다.
@@ -104,29 +104,29 @@ EDA/FE 과제는 크롤링된 리뷰 CSV를 전처리한 뒤, 사이트별 EDA �
 전체 전처리 실행:
 
 ```bash
-python3 -m review_analysis.preprocessing.main -o database --all
+python3 -m collector.preprocessing.main -o database --all
 ```
 
 특정 사이트 전처리 실행:
 
 ```bash
-python3 -m review_analysis.preprocessing.main -o database -c reviews_naver
-python3 -m review_analysis.preprocessing.main -o database -c reviews_letterboxd
-python3 -m review_analysis.preprocessing.main -o database -c reviews_metacritic
+python3 -m collector.preprocessing.main -o database -c reviews_naver
+python3 -m collector.preprocessing.main -o database -c reviews_letterboxd
+python3 -m collector.preprocessing.main -o database -c reviews_metacritic
 ```
 
 사이트별 EDA 그래프 생성:
 
 ```bash
-python3 review_analysis/preprocessing/naver_eda.py -i database/preprocessed_reviews_naver.csv -o review_analysis/plots
-python3 review_analysis/preprocessing/letterboxd_eda.py
-python3 review_analysis/preprocessing/metacritic_eda.py
+python3 collector/preprocessing/naver_eda.py -i database/preprocessed_reviews_naver.csv -o collector/plots
+python3 collector/preprocessing/letterboxd_eda.py
+python3 collector/preprocessing/metacritic_eda.py
 ```
 
 사이트 비교분석 그래프 생성:
 
 ```bash
-python3 review_analysis/preprocessing/comparison_eda.py
+python3 collector/preprocessing/comparison_eda.py
 ```
 
 실행 결과는 아래 경로에 저장됩니다. CSV 파일은 전처리된 데이터 또는 비교분석 요약값이고, PNG 파일은 EDA/비교분석 시각화 그래프입니다.
@@ -137,8 +137,8 @@ database/preprocessed_reviews_letterboxd.csv
 database/preprocessed_reviews_metacritic.csv
 database/comparison_rating_summary.csv
 database/comparison_keyword_summary.csv
-review_analysis/plots/comparison_rating_distribution.png
-review_analysis/plots/comparison_keyword_frequency.png
+collector/plots/comparison_rating_distribution.png
+collector/plots/comparison_keyword_frequency.png
 ```
 
 아래에 크롤링, 전처리, EDA/FE 및 사이트 비교분석 상세 내용을 함께 정리했습니다.
@@ -171,7 +171,7 @@ Letterboxd는 리뷰가 여러 페이지에 나누어 제공되는 구조이므�
 별점은 전체적으로 높은 점수에 집중되어 있었으며, 4점과 5점 리뷰가 가장 많은 비중을 차지하였다. 평균 별점은 약 **3.99점**으로 나타났으며, 전반적으로 긍정적인 평가가 많은 플랫폼임을 확인할 수 있었다.
 
 <p align="center">
-<img src="review_analysis/plots/letterboxd_rating_distribution.png" width="600">
+<img src="collector/plots/letterboxd_rating_distribution.png" width="600">
 </p>
 
 ---
@@ -181,11 +181,11 @@ Letterboxd는 리뷰가 여러 페이지에 나누어 제공되는 구조이므�
 리뷰 길이는 짧은 리뷰가 가장 많았으며, 일부 매우 긴 리뷰가 존재하였다. Boxplot을 통해 긴 리뷰가 이상치처럼 보였지만 실제 사용자 리뷰였기 때문에 제거하지 않고 유지하였다.
 
 <p align="center">
-<img src="review_analysis/plots/letterboxd_review_length_distribution.png" width="600">
+<img src="collector/plots/letterboxd_review_length_distribution.png" width="600">
 </p>
 
 <p align="center">
-<img src="review_analysis/plots/letterboxd_review_length_boxplot.png" width="600">
+<img src="collector/plots/letterboxd_review_length_boxplot.png" width="600">
 </p>
 
 ---
@@ -195,7 +195,7 @@ Letterboxd는 리뷰가 여러 페이지에 나누어 제공되는 구조이므�
 Letterboxd는 글로벌 플랫폼이기 때문에 영어뿐 아니라 스페인어, 포르투갈어, 프랑스어 등 다양한 언어의 리뷰가 존재하였다. 전처리 과정에서 언어를 자동으로 감지하여 저장하였다.
 
 <p align="center">
-<img src="review_analysis/plots/letterboxd_language_distribution.png" width="600">
+<img src="collector/plots/letterboxd_language_distribution.png" width="600">
 </p>
 
 ---
@@ -205,11 +205,11 @@ Letterboxd는 글로벌 플랫폼이기 때문에 영어뿐 아니라 스페인�
 리뷰 작성 시점을 연도 및 월 단위로 분석하였다. 최근 시기에 리뷰가 집중되어 있었으며, 이는 크롤링한 페이지의 특성과 최근 사용자 활동의 영향을 함께 반영한 결과로 판단된다.
 
 <p align="center">
-<img src="review_analysis/plots/letterboxd_yearly_review_count.png" width="600">
+<img src="collector/plots/letterboxd_yearly_review_count.png" width="600">
 </p>
 
 <p align="center">
-<img src="review_analysis/plots/letterboxd_latest_year_monthly_count.png" width="600">
+<img src="collector/plots/letterboxd_latest_year_monthly_count.png" width="600">
 </p>
 
 ---
@@ -219,15 +219,15 @@ Letterboxd는 글로벌 플랫폼이기 때문에 영어뿐 아니라 스페인�
 언어별 TF-IDF를 이용하여 주요 단어를 추출하였다. 영어, 스페인어, 포르투갈어 리뷰를 각각 분석하여 플랫폼에서 자주 등장하는 핵심 단어를 확인하였다.
 
 <p align="center">
-<img src="review_analysis/plots/letterboxd_top_terms_en.png" width="600">
+<img src="collector/plots/letterboxd_top_terms_en.png" width="600">
 </p>
 
 <p align="center">
-<img src="review_analysis/plots/letterboxd_top_terms_es.png" width="600">
+<img src="collector/plots/letterboxd_top_terms_es.png" width="600">
 </p>
 
 <p align="center">
-<img src="review_analysis/plots/letterboxd_top_terms_pt.png" width="600">
+<img src="collector/plots/letterboxd_top_terms_pt.png" width="600">
 </p>
 
 ---
@@ -334,7 +334,7 @@ database/preprocessed_reviews_letterboxd.csv
 실행 방법은 다음과 같다. 아래 명령어는 프로젝트 루트 디렉토리에서 실행한다.
 
 ```bash
-python3 -m review_analysis.crawling.main -o database --all
+python3 -m collector.crawling.main -o database --all
 ```
 
 ---
@@ -350,7 +350,7 @@ python3 -m review_analysis.crawling.main -o database --all
 네이버 별점은 10점 만점 기준으로 수집되었다. 평균 별점은 약 **8.89점**, 중앙값은 **10점**으로 나타났으며, 전체 리뷰 중 약 **84.2%**가 8점 이상이었다. 따라서 네이버 관람평은 전반적으로 높은 평점에 집중된 분포를 보였다.
 
 <p align="center">
-<img src="review_analysis/plots/naver_rating_distribution.png" width="600">
+<img src="collector/plots/naver_rating_distribution.png" width="600">
 </p>
 
 ---
@@ -360,7 +360,7 @@ python3 -m review_analysis.crawling.main -o database --all
 리뷰 길이는 평균 약 **44.46자**, 중앙값 **26자**로 짧은 리뷰가 많은 편이었다. 다만 최대 길이는 324자로 일부 긴 감상평도 존재하였다. 긴 리뷰는 실제 사용자 리뷰로 판단하여 제거하지 않고 `is_long_review` 파생 변수로 별도 표시하였다.
 
 <p align="center">
-<img src="review_analysis/plots/naver_review_length_distribution.png" width="600">
+<img src="collector/plots/naver_review_length_distribution.png" width="600">
 </p>
 
 ---
@@ -370,7 +370,7 @@ python3 -m review_analysis.crawling.main -o database --all
 평점을 기준으로 4점 이하를 부정, 5~7점을 중립, 8점 이상을 긍정 리뷰로 구분하였다. 긍정 리뷰가 421개로 대부분을 차지하였고, 중립 리뷰는 66개, 부정 리뷰는 13개로 나타났다. 이는 별점 분포에서 확인한 긍정 편향을 그룹 단위로도 보여준다.
 
 <p align="center">
-<img src="review_analysis/plots/naver_sentiment_group.png" width="600">
+<img src="collector/plots/naver_sentiment_group.png" width="600">
 </p>
 
 ---
@@ -380,11 +380,11 @@ python3 -m review_analysis.crawling.main -o database --all
 리뷰 작성일은 2022년 12월 14일부터 2026년 3월 1일까지 분포하였다. 전체 500개 리뷰를 연도별로 집계한 결과 2022년과 2026년에 리뷰가 집중되어 있었으며, 요일별 리뷰 수를 함께 확인한 결과 주말 작성 리뷰 비율은 약 **46.0%**로 나타났다.
 
 <p align="center">
-<img src="review_analysis/plots/naver_yearly_reviews.png" width="600">
+<img src="collector/plots/naver_yearly_reviews.png" width="600">
 </p>
 
 <p align="center">
-<img src="review_analysis/plots/naver_weekday_reviews.png" width="600">
+<img src="collector/plots/naver_weekday_reviews.png" width="600">
 </p>
 
 ---
@@ -394,7 +394,7 @@ python3 -m review_analysis.crawling.main -o database --all
 정제된 리뷰 텍스트에서 불용어와 숫자를 제외한 뒤 주요 키워드를 단어 단위로 나타냈다.
 
 <p align="center">
-<img src="review_analysis/plots/naver_top_words.png" width="600">
+<img src="collector/plots/naver_top_words.png" width="600">
 </p>
 
 ---
@@ -481,12 +481,12 @@ python3 -m review_analysis.crawling.main -o database --all
 
 ## (7) 결과 저장 및 실행 방법
 
-전처리 결과와 전처리 요약 파일은 `database`에, EDA 그래프는 `review_analysis/plots`에 저장된다.
+전처리 결과와 전처리 요약 파일은 `database`에, EDA 그래프는 `collector/plots`에 저장된다.
 
 ```bash
 # 프로젝트 루트 디렉토리에서 실행
-python3 -m review_analysis.preprocessing.main -o database -c reviews_naver
-python3 review_analysis/preprocessing/naver_eda.py -i database/preprocessed_reviews_naver.csv -o review_analysis/plots
+python3 -m collector.preprocessing.main -o database -c reviews_naver
+python3 collector/preprocessing/naver_eda.py -i database/preprocessed_reviews_naver.csv -o collector/plots
 ```
 
 생성 파일은 다음과 같다.
@@ -494,12 +494,12 @@ python3 review_analysis/preprocessing/naver_eda.py -i database/preprocessed_revi
 ```
 database/preprocessed_reviews_naver.csv
 database/naver_preprocessing_summary.csv
-review_analysis/plots/naver_rating_distribution.png
-review_analysis/plots/naver_review_length_distribution.png
-review_analysis/plots/naver_sentiment_group.png
-review_analysis/plots/naver_yearly_reviews.png
-review_analysis/plots/naver_weekday_reviews.png
-review_analysis/plots/naver_top_words.png
+collector/plots/naver_rating_distribution.png
+collector/plots/naver_review_length_distribution.png
+collector/plots/naver_sentiment_group.png
+collector/plots/naver_yearly_reviews.png
+collector/plots/naver_weekday_reviews.png
+collector/plots/naver_top_words.png
 ```
 
 ---
@@ -523,7 +523,7 @@ Metacritic 리뷰 페이지는 스크롤에 따라 리뷰 카드가 추가로 �
 실행 방법은 다음과 같다. 아래 명령어는 프로젝트 루트 디렉토리에서 실행한다.
 
 ```bash
-python3 -m review_analysis.crawling.main -o database -c metacritic
+python3 -m collector.crawling.main -o database -c metacritic
 ```
 
 ---
@@ -551,11 +551,11 @@ python3 -m review_analysis.crawling.main -o database -c metacritic
 Metacritic 평점은 평균 **6.97점**, 중앙값 **8점**으로 나타났다. 8점 이상 긍정 리뷰는 294개(55.8%), 5~7점 중립 리뷰는 117개(22.2%), 4점 이하 부정 리뷰는 116개(22.0%)였다. 따라서 긍정 평가가 가장 많지만, 낮은 평점도 일정 비율 존재해 플랫폼 간 평점 편향을 비교할 때 고려할 필요가 있다.
 
 <p align="center">
-<img src="review_analysis/plots/metacritic_rating_distribution.png" width="600">
+<img src="collector/plots/metacritic_rating_distribution.png" width="600">
 </p>
 
 <p align="center">
-<img src="review_analysis/plots/metacritic_sentiment_group.png" width="600">
+<img src="collector/plots/metacritic_sentiment_group.png" width="600">
 </p>
 
 ---
@@ -567,11 +567,11 @@ Metacritic 평점은 평균 **6.97점**, 중앙값 **8점**으로 나타났다. 
 평점별 중앙 리뷰 길이 그래프를 통해 평점에 따라 서술 길이가 어떻게 달라지는지 확인할 수 있다. 이는 긴 리뷰를 이상치로 단정하지 않고, 사용자 표현 방식의 차이로 분석하기 위한 것이다.
 
 <p align="center">
-<img src="review_analysis/plots/metacritic_review_length_distribution.png" width="600">
+<img src="collector/plots/metacritic_review_length_distribution.png" width="600">
 </p>
 
 <p align="center">
-<img src="review_analysis/plots/metacritic_median_length_by_rating.png" width="600">
+<img src="collector/plots/metacritic_median_length_by_rating.png" width="600">
 </p>
 
 ---
@@ -581,11 +581,11 @@ Metacritic 평점은 평균 **6.97점**, 중앙값 **8점**으로 나타났다. 
 리뷰 작성일은 2022년 12월 16일부터 2026년 5월 11일까지 분포한다. 연도별·요일별 리뷰 수를 통해 크롤링 표본의 작성 시점과 사용자 활동 패턴을 확인하였다. 주말 작성 리뷰 비율은 약 **32.6%**이다.
 
 <p align="center">
-<img src="review_analysis/plots/metacritic_yearly_review_count.png" width="600">
+<img src="collector/plots/metacritic_yearly_review_count.png" width="600">
 </p>
 
 <p align="center">
-<img src="review_analysis/plots/metacritic_weekday_reviews.png" width="600">
+<img src="collector/plots/metacritic_weekday_reviews.png" width="600">
 </p>
 
 ---
@@ -597,11 +597,11 @@ Metacritic 평점은 평균 **6.97점**, 중앙값 **8점**으로 나타났다. 
 언어별 표본 수가 크게 다르므로, 평균 평점 비교 그래프는 리뷰가 5개 이상인 언어만 표시했다. 언어별 해석에서는 작은 표본의 평균을 일반화하지 않도록 주의한다.
 
 <p align="center">
-<img src="review_analysis/plots/metacritic_language_distribution.png" width="600">
+<img src="collector/plots/metacritic_language_distribution.png" width="600">
 </p>
 
 <p align="center">
-<img src="review_analysis/plots/metacritic_average_rating_by_language.png" width="600">
+<img src="collector/plots/metacritic_average_rating_by_language.png" width="600">
 </p>
 
 ---
@@ -611,15 +611,15 @@ Metacritic 평점은 평균 **6.97점**, 중앙값 **8점**으로 나타났다. 
 키워드는 전체 언어를 한데 섞지 않고, 리뷰 수가 많은 언어별로 Word TF-IDF를 독립적으로 계산하였다. 언어별 불용어와 `movie`, `film`, `avatar` 같은 분석 가치가 낮은 일반 단어를 제외해 핵심 표현을 확인했다.
 
 <p align="center">
-<img src="review_analysis/plots/metacritic_top_terms_en.png" width="600">
+<img src="collector/plots/metacritic_top_terms_en.png" width="600">
 </p>
 
 <p align="center">
-<img src="review_analysis/plots/metacritic_top_terms_es.png" width="600">
+<img src="collector/plots/metacritic_top_terms_es.png" width="600">
 </p>
 
 <p align="center">
-<img src="review_analysis/plots/metacritic_top_terms_pt.png" width="600">
+<img src="collector/plots/metacritic_top_terms_pt.png" width="600">
 </p>
 
 ---
@@ -659,12 +659,12 @@ Metacritic 평점은 평균 **6.97점**, 중앙값 **8점**으로 나타났다. 
 
 ## (5) 결과 저장 및 실행 방법
 
-전처리 결과와 요약 파일은 `database`에, EDA 그래프는 `review_analysis/plots`에 저장된다.
+전처리 결과와 요약 파일은 `database`에, EDA 그래프는 `collector/plots`에 저장된다.
 
 ```bash
 # 프로젝트 루트 디렉토리에서 실행
-python3 -m review_analysis.preprocessing.main -c reviews_metacritic
-python3 review_analysis/preprocessing/metacritic_eda.py
+python3 -m collector.preprocessing.main -c reviews_metacritic
+python3 collector/preprocessing/metacritic_eda.py
 ```
 
 생성 파일은 다음과 같다.
@@ -675,7 +675,7 @@ database/metacritic_preprocessing_summary.csv
 database/metacritic_tfidf_vectorizer.joblib
 database/metacritic_eda_summary.csv
 database/metacritic_language_summary.csv
-review_analysis/plots/metacritic_*.png
+collector/plots/metacritic_*.png
 ```
 
 ---
@@ -714,7 +714,7 @@ review_analysis/plots/metacritic_*.png
 세 사이트 모두 9-10점 구간의 비율이 가장 높게 나타났다. 다만 Naver는 9-10점 구간이 **66.2%**로 가장 높아 고평점 리뷰가 매우 강하게 집중되어 있었다. Letterboxd와 Metacritic은 9-10점 구간이 각각 **42.1%**, **42.7%**로 비슷했지만, 낮은 점수 구간의 비율에서는 차이가 있었다.
 
 <p align="center">
-<img src="review_analysis/plots/comparison_rating_distribution.png" width="600">
+<img src="collector/plots/comparison_rating_distribution.png" width="600">
 </p>
 
 ### 4) 해석
@@ -860,7 +860,7 @@ Naver에서는 `영상미`, `스토리`, `재밌게`, `영화관`, `cg`, `아름
 ### 4) 키워드 비교 그래프
 
 <p align="center">
-<img src="review_analysis/plots/comparison_keyword_frequency.png" width="1000">
+<img src="collector/plots/comparison_keyword_frequency.png" width="1000">
 </p>
 
 ### 5) 비교 해석
@@ -1139,21 +1139,56 @@ Repository → Service → MCP Tool
 Next.js Agent
 ```
 
+### 프로젝트 디렉터리
+
+```text
+YBIGTA_newbie_team_project/
+├── collector/
+│   ├── crawling/
+│   ├── preprocessing/
+│   ├── repositories/
+│   ├── tests/
+│   └── main.py
+├── mcp_server/
+│   ├── tools/
+│   │   ├── search.py
+│   │   ├── aggregation.py
+│   │   └── latest.py
+│   ├── services/
+│   ├── repositories/
+│   ├── tests/
+│   ├── client.py
+│   ├── server.py
+│   ├── Dockerfile
+│   └── requirements.txt
+├── deploy/
+│   ├── nginx/
+│   └── systemd/
+├── aws/
+├── .env.example
+├── .gitignore
+└── README.md
+```
+
+Next.js Agent는 `web/` 디렉터리에서 별도로 구성하며, 배포 담당자가 해당
+애플리케이션을 병합한다. 테스트와 MCP 검증 클라이언트는 각각 관련 기능
+디렉터리 안에 배치하여 최상위 구조를 단순하게 유지한다.
+
 ### 날씨 데이터 수집 및 자동 갱신
 
 Open-Meteo API에서 서울역, 강남, 신촌, 여의도, 잠실의 날씨를 수집하였다. 수집 항목은 기온, 체감온도, 습도, 강수량, 풍속, 날씨 코드, 위험 점수, 위험 등급, 위험 판단 사유, 관측 시각 및 수집 시각이다.
 
 AWS EC2의 `systemd timer`를 이용하여 수집기를 30분마다 자동 실행하도록 구성하였다. `(location, observed_at)`에 UNIQUE 제약조건을 적용하여 동일 지역과 관측 시각의 데이터가 중복 저장되지 않도록 하였다.
 
-![30분 주기 날씨 데이터 자동 갱신](evidence/weather_mcp/data_update.png)
+![30분 주기 날씨 데이터 자동 갱신](aws/data_update.png)
 
 ### Private RDS 및 네트워크 보안
 
 MySQL 데이터베이스는 서로 다른 가용 영역의 Private Subnet에 배치하였다. RDS의 Public Access를 비활성화하고, 인터넷 게이트웨이로 향하는 공개 라우팅 경로를 두지 않았다. MySQL 3306 포트는 지정된 보안 그룹에서만 접근할 수 있도록 제한하였으며, 외부 CIDR을 통한 접근은 허용하지 않았다. 데이터베이스 접속 정보와 비밀번호는 `.env` 환경변수로 관리하였다.
 
-![Private RDS 및 서브넷 구성](evidence/weather_mcp/rds_private.png)
+![Private RDS 및 서브넷 구성](aws/rds_private.png)
 
-![RDS 보안 그룹의 MySQL 접근 제한](evidence/weather_mcp/security_group.png)
+![RDS 보안 그룹의 MySQL 접근 제한](aws/security_group.png)
 
 ### 데이터베이스 권한 분리
 
@@ -1185,7 +1220,131 @@ MCP 서버 이름은 `Seoul Weather MCP`이며 다음 세 가지 도구를 구�
 날씨 API 클라이언트, 위험도 계산, 데이터베이스 스키마, Repository, Service 및 입력값 검증 테스트를 수행하였으며 전체 테스트가 통과하였다.
 
 ```text
-54 passed in 0.53s
+62 passed in 0.38s
 ```
 
-주요 검증 항목은 Open-Meteo 응답 파싱, 위험 점수 및 등급 계산, 중복 저장 방지, 스키마 제약조건과 인덱스, MCP 읽기 전용 계정, 검색 조건 검증, 바인딩 파라미터 사용 및 위험도 집계이다.
+위 결과는 실제 RDS 쓰기 테스트를 제외한 날씨/MCP 테스트 결과이다. 주요 검증 항목은 Open-Meteo 응답 파싱, 위험 점수 및 등급 계산, 중복 저장 방지, 스키마 제약조건과 인덱스, MCP 읽기 전용 계정, Bearer 인증, HTTP 요청 크기 제한, Streamable HTTP Tool 목록/호출, 검색 조건 검증, 바인딩 파라미터 사용 및 위험도 집계이다. RDS 통합 테스트는 필요한 DB 권한과 Private VPC 접속을 가진 별도의 통합 테스트 환경에서 수행한다. MCP EC2에서는 `mcp_user`의 조회 성공과 실제 Tool 호출을 검증한다.
+
+### MCP Server 보안
+
+MCP는 `streamable-http` 방식으로 동작하며 외부 요청은 반드시 다음 헤더를 포함해야 한다.
+
+```http
+Authorization: Bearer <MCP_AUTH_TOKEN>
+```
+
+`MCP_AUTH_TOKEN`은 실행 시점에 환경변수로만 주입한다. 애플리케이션은 `hmac.compare_digest`로 토큰을 비교하고, 토큰이 없거나 틀리면 `401 Unauthorized`를 반환한다. 기본 요청 본문 한도는 64 KiB이며 애플리케이션과 Nginx에서 동시에 적용한다. Nginx는 IP별 10 req/s의 rate limit도 적용한다.
+
+Tool 입력은 다음과 같이 제한한다.
+
+| 항목 | 제한 |
+|---|---|
+| `location` | 서울역, 강남, 신촌, 여의도, 잠실만 허용 |
+| `risk_level` | `LOW`, `MEDIUM`, `HIGH`, `CRITICAL`만 허용 |
+| `limit` | 1~500 |
+| 조회 기간 | 최대 31일 |
+| DB 연결/읽기 | 각각 5초/10초 timeout |
+| SQL | 바인딩 파라미터만 사용, Raw SQL Tool 없음 |
+
+`mcp_server/database.py`는 `MYSQL_MCP_USER`, `MYSQL_MCP_PASSWORD`만 읽으며 Collector 계정으로 fallback하지 않는다. 따라서 읽기 전용 계정이 설정되지 않으면 서버는 DB 요청을 실패시킨다.
+
+### Nginx Reverse Proxy
+
+EC2에서는 Docker 컨테이너의 8000 포트를 `127.0.0.1:8000`에만 바인딩한다. 외부 요청은 `deploy/nginx/mcp.conf`의 Nginx를 거쳐야 하며, EC2 Security Group에는 80/443만 외부로 허용하고 8000은 열지 않는다. 22번 포트가 필요한 경우에도 관리자의 현재 IP만 허용한다.
+
+```text
+Internet
+  -> EC2 Security Group (80/443 only)
+  -> Nginx (request size/rate limit)
+  -> 127.0.0.1:8000
+  -> Bearer authentication
+  -> MCP Tool -> Service -> Repository
+  -> Private RDS:3306 (mcp_user, SELECT only)
+```
+
+Bearer Token이 평문으로 노출되지 않도록 실제 배포에서는 도메인과 TLS 인증서를 적용하고 HTTP를 HTTPS로 redirect한다. Nginx access log에는 Authorization 헤더를 출력하지 않는다.
+
+### MCP Docker Image
+
+MCP 전용 Dockerfile은 `mcp_server/Dockerfile`이다. 루트 경로의 기존 FastAPI Dockerfile과 구분하며, MCP 실행에 필요한 코드와 의존성만 복사한다. 컨테이너는 non-root `mcp` 사용자로 실행한다.
+
+```bash
+docker build -f mcp_server/Dockerfile -t <DOCKERHUB_USER>/weather-mcp:latest .
+docker push <DOCKERHUB_USER>/weather-mcp:latest
+```
+
+로컬에서 컨테이너를 확인할 때도 8000을 전체 인터페이스에 공개하지 않는다.
+
+```bash
+docker run --rm --name weather-mcp \
+  --env-file .env \
+  --publish 127.0.0.1:8000:8000 \
+  <DOCKERHUB_USER>/weather-mcp:latest
+```
+
+`.dockerignore`는 `.env`, PEM/Key/Certificate, AWS/SSH 설정, credential/secret 파일을 build context에서 제외한다. 실제 비밀번호는 이미지에 넣지 않고 EC2의 root 전용 `/etc/weather-mcp.env` (`chmod 600`)로 주입한다.
+
+### EC2 배포
+
+EC2에 Docker와 Nginx를 설치한 뒤 다음 파일을 배치한다.
+
+```bash
+sudo cp deploy/nginx/mcp.conf /etc/nginx/conf.d/mcp.conf
+sudo cp deploy/systemd/weather-mcp.service /etc/systemd/system/weather-mcp.service
+sudo nginx -t
+```
+
+`/etc/default/weather-mcp-image`:
+
+```env
+MCP_IMAGE=<DOCKERHUB_USER>/weather-mcp:latest
+```
+
+`/etc/weather-mcp.env`:
+
+```env
+MYSQL_HOST=<PRIVATE_RDS_ENDPOINT>
+MYSQL_PORT=3306
+MYSQL_DATABASE=weather_db
+MYSQL_MCP_USER=mcp_user
+MYSQL_MCP_PASSWORD=<READ_ONLY_PASSWORD>
+MCP_AUTH_TOKEN=<64_HEX_CHAR_RANDOM_TOKEN>
+MCP_MAX_REQUEST_BYTES=65536
+```
+
+```bash
+sudo chmod 600 /etc/default/weather-mcp-image /etc/weather-mcp.env
+sudo systemctl daemon-reload
+sudo systemctl enable --now weather-mcp
+sudo systemctl restart nginx
+sudo systemctl status weather-mcp --no-pager
+curl http://127.0.0.1:8000/healthz
+```
+
+### MCP 동작 확인과 캡처
+
+`.env`에 배포 URL과 배포 시 사용한 토큰을 설정한다. 토큰 값은 캡처에 표시되지 않는다.
+
+```env
+MCP_SERVER_URL=https://<MCP_DOMAIN>/mcp
+MCP_AUTH_TOKEN=<SAME_TOKEN_AS_EC2>
+```
+
+Tool 목록 캡처:
+
+```bash
+python -m mcp_server.client --action list
+```
+
+결과 화면에 `get_latest_weather`, `search_weather`, `get_weather_risk_summary`가 보이도록 캡처하여 `aws/mcp_tools.png`로 저장한다.
+
+실제 DB Tool 호출 캡처:
+
+```bash
+python -m mcp_server.client \
+  --action call \
+  --tool get_latest_weather \
+  --arguments '{"location":"신촌"}'
+```
+
+반환값에 `observed_at`, `temperature`, `risk_level`, `collected_at`이 표시되는 화면을 `aws/mcp_call.png`로 저장한다. 이 검증은 MCP 서버가 실제 Private RDS의 수집 데이터를 읽어 반환했음을 보여준다.

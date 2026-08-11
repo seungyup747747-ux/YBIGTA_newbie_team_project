@@ -1,10 +1,17 @@
 from mcp.server.fastmcp import FastMCP
 
-from mcp_server.tools.weather_tools import register_weather_tools
+from mcp_server.tools import register_weather_tools
 from mcp_server.services.weather_service import WeatherService
 
 
-mcp = FastMCP("Seoul Weather MCP")
+mcp = FastMCP(
+    "Seoul Weather MCP",
+    host="0.0.0.0",
+    port=8000,
+    streamable_http_path="/mcp",
+    json_response=True,
+    stateless_http=True,
+)
 
 _weather_service: WeatherService = None
 

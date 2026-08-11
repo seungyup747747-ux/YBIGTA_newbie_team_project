@@ -1,0 +1,18 @@
+[Unit]
+Description=Seoul Weather MCP container
+After=docker.service network-online.target
+Requires=docker.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+EnvironmentFile=/etc/default/weather-mcp-image
+ExecStartPre=-/usr/bin/docker rm weather-mcp
+ExecStartPre=/usr/bin/docker pull ${MCP_IMAGE}
+ExecStart=/usr/bin/docker run --name weather-mcp --env-file /etc/weather-mcp.env --publish 127.0.0.1:8000:8000 --read-only --tmpfs /tmp:rw,noexec,nosuid,size=16m --cap-drop ALL --security-opt no-new-privileges --pids-limit 128 ${MCP_IMAGE}
+ExecStop=/usr/bin/docker stop -t 15 weather-mcp
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
