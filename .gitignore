@@ -6,3 +6,5 @@ venv/
 .ipynb_checkpoints/
 .env
 *.pem
+
+ybigta-ec2-key.pem

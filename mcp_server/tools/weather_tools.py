@@ -2,7 +2,7 @@ from typing import Any, Callable
 
 from mcp.server.fastmcp import FastMCP
 
-from mcp_server.weather_service import WeatherService
+from mcp_server.services.weather_service import WeatherService
 
 
 ServiceFactory = Callable[[], WeatherService]
