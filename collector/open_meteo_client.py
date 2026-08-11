@@ -10,15 +10,9 @@ from dotenv import load_dotenv
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
-load_dotenv()
+from collector.locations import LOCATIONS
 
-LOCATIONS: dict[str, tuple[float, float]] = {
-    "신촌": (37.5598, 126.9423),
-    "여의도": (37.5219, 126.9245),
-    "강남": (37.4979, 127.0276),
-    "잠실": (37.5133, 127.1002),
-    "서울역": (37.5547, 126.9707),
-}
+load_dotenv()
 
 CURRENT_FIELDS = (
     "temperature_2m",

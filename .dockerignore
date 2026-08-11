@@ -1,5 +1,21 @@
 .env
-.git
+.env.*
+!.env.example
+.aws/
+.ssh/
+*.key
+*.crt
+*.p12
+*.pfx
+*.pem
+credential*
+credentials*
+secrets*
+tmp/
+aws/
+.git/
+database/
+collector/plots/
 .gitignore
 __pycache__/
 *.pyc
@@ -14,4 +30,3 @@ env/
 .mypy_cache/
 .ipynb_checkpoints/
 *.log
-.env

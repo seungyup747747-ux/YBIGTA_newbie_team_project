@@ -1,19 +1,20 @@
 from __future__ import annotations
 
 import json
-from datetime import date, datetime, time
+from datetime import date, datetime, time, timedelta
 from decimal import Decimal
 from typing import Any
 
 from sqlalchemy import Engine, bindparam, text
 
-from collector.open_meteo_client import LOCATIONS
-from database.mysql_connection import create_db_engine
+from collector.locations import LOCATIONS
+from mcp_server.database import create_mcp_engine
 
 ALLOWED_LOCATIONS = frozenset(LOCATIONS)
 ALLOWED_RISK_LEVELS = frozenset(
     {"LOW", "MEDIUM", "HIGH", "CRITICAL"}
 )
+MAX_QUERY_PERIOD = timedelta(days=31)
 
 LATEST_WEATHER_QUERY = text(
     """
@@ -57,7 +58,7 @@ LATEST_WEATHER_QUERY = text(
 class WeatherRepository:
     def __init__(self, engine: Engine | None = None) -> None:
         # MCP Service는 읽기 전용 mcp_user 계정만 사용한다.
-        self.engine = engine or create_db_engine("mcp")
+        self.engine = engine or create_mcp_engine()
 
     @staticmethod
     def _validate_location(location: str | None) -> str | None:
@@ -158,6 +159,9 @@ class WeatherRepository:
             raise ValueError(
                 "start_at은 end_at보다 늦을 수 없습니다."
             )
+
+        if end - start > MAX_QUERY_PERIOD:
+            raise ValueError("조회 기간은 최대 31일입니다.")
 
         return start, end
 

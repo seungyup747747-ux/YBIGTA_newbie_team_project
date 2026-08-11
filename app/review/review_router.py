@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status
 
 from database.mongodb_connection import mongo_db
-from review_analysis.preprocessing.example_processor import ExampleProcessor
+from collector.preprocessing.example_processor import ExampleProcessor
 
 
 review_router = APIRouter(
