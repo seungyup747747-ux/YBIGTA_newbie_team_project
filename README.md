@@ -1348,3 +1348,54 @@ python -m mcp_server.client \
 ```
 
 반환값에 `observed_at`, `temperature`, `risk_level`, `collected_at`이 표시되는 화면을 `aws/mcp_call.png`로 저장한다. 이 검증은 MCP 서버가 실제 Private RDS의 수집 데이터를 읽어 반환했음을 보여준다.
+
+### Next.js Data Analysis Agent
+
+날씨 MCP 서버를 사용하는 Next.js 기반 데이터 분석 Agent 화면을 `web/` 디렉터리에 구현하였다. 사용자는 브라우저에서 자연어 질문을 입력하고, Next.js 서버 라우트가 질문 의도에 맞는 MCP Tool을 선택하여 MCP 서버를 호출한 뒤 결과를 기반으로 답변을 생성한다.
+
+```text
+User Browser
+  -> Next.js Client Chat UI
+  -> Vercel /api/chat Route Handler
+  -> Agent Tool Selection
+  -> Streamable HTTP MCP tools/call
+  -> MCP Server
+  -> Service -> Repository
+  -> Private RDS MySQL
+  -> MCP Result
+  -> Agent Answer
+```
+
+브라우저는 MCP 서버나 RDS에 직접 접근하지 않는다. Client Component는 사용자 입력과 응답 표시만 담당하고, MCP 인증 토큰과 LLM API Key를 사용하는 로직은 `web/src/app/api/chat/route.ts` 서버 라우트에서만 실행한다.
+
+Agent가 사용하는 Tool 매핑은 다음과 같다.
+
+| 사용자 질문 유형 | 호출 MCP Tool | 조회 데이터 |
+|---|---|---|
+| 최신 날씨 조회 | `get_latest_weather` | 서울 주요 지역의 최신 날씨 관측값 |
+| 기간별 날씨 검색 | `search_weather` | 시작/종료 시각, 지역, 위험등급 조건에 맞는 관측 기록 |
+| 위험도 집계 분석 | `get_weather_risk_summary` | 위험등급별 관측 건수, 평균 위험점수, 최대 위험점수 |
+
+Next.js Agent는 MCP 서버가 제공하는 Streamable HTTP MCP endpoint를 호출한다. Tool별 REST URL을 따로 두지 않고, 모든 Tool 호출은 동일한 `MCP_BASE_URL`로 전송하며 JSON-RPC `tools/call` 요청의 `name` 값으로 실행할 Tool을 지정한다.
+
+Vercel에는 다음 환경변수를 등록한다. 실제 값은 GitHub에 커밋하지 않는다.
+
+```env
+OPENAI_API_KEY=
+LLM_MODEL=
+MCP_BASE_URL=http://15.165.237.123/mcp
+MCP_AUTH_TOKEN=
+MCP_USE_MOCK=false
+```
+
+`OPENAI_API_KEY`, `MCP_AUTH_TOKEN`, `MCP_BASE_URL` 등 서버 전용 값에는 `NEXT_PUBLIC_` 접두사를 사용하지 않는다. `NEXT_PUBLIC_` 환경변수는 브라우저 번들에 포함될 수 있으므로 인증 토큰과 API Key에는 사용할 수 없다. Agent는 RDS 접속 정보를 보유하지 않으며, `MYSQL_HOST`, `MYSQL_MCP_USER`, `MYSQL_MCP_PASSWORD` 같은 DB 계정 정보는 MCP 서버 내부에서만 사용한다.
+
+#### Agent 동작 확인
+
+일반 조회 질문은 `get_latest_weather` Tool을 호출하여 최신 관측 데이터를 조회한다.
+
+![Agent 일반 조회](aws/agent_query.png)
+
+집계 분석 질문은 `get_weather_risk_summary` Tool을 호출하여 최근 기간의 위험등급별 관측 건수와 위험점수를 집계한다.
+
+![Agent 집계 분석](aws/agent_analysis.png)
