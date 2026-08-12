@@ -1353,6 +1353,8 @@ python -m mcp_server.client \
 
 날씨 MCP 서버를 사용하는 Next.js 기반 데이터 분석 Agent 화면을 `web/` 디렉터리에 구현하였다. 사용자는 브라우저에서 자연어 질문을 입력하고, Next.js 서버 라우트가 질문 의도에 맞는 MCP Tool을 선택하여 MCP 서버를 호출한 뒤 결과를 기반으로 답변을 생성한다.
 
+Vercel 배포 URL: https://web-7l5ts7rds-ybigta-2.vercel.app
+
 ```text
 User Browser
   -> Next.js Client Chat UI
